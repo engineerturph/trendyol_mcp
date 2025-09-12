@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "trendyol-search": {
+      "command": "python",
+      "args": ["/Users/engineerturabi/Desktop/MCP trendyol/mcp.py"],
+      "env": {}
+    }
+  }
+}

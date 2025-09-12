@@ -269,6 +269,3 @@ def search_trendyol(query, target_count=100, max_scroll_attempts=15):
         print(f"Error occurred: {e}")
         if "driver" in locals():
             driver.quit()
-
-
-search_trendyol("telefon")
