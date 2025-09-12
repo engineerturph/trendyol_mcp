@@ -308,6 +308,3 @@ def print_product_details(details):
             print(f"  {i}. {feature}")
 
     print("=" * 60)
-
-
-get_product_details("iPhone 15")

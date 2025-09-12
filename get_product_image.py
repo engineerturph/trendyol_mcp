@@ -307,7 +307,3 @@ def download_and_show_image(image_url):
         print(f"Error downloading image: {e}")
     except Exception as e:
         print(f"Error displaying image: {e}")
-
-
-# Run the image extraction
-get_product_image("iPhone 15")

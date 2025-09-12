@@ -292,6 +292,3 @@ def print_product_reviews(reviews):
 
     print(f"\nTotal Reviews: {len(reviews)}")
     print("=" * 80)
-
-
-get_product_reviews("iPhone 15")
