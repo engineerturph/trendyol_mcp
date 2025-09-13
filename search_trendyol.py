@@ -40,14 +40,6 @@ def search_trendyol(query, target_count=100, max_scroll_attempts=15):
         driver.get(url)
         print("Page loaded, waiting...")
 
-        # Wait longer for Cloudflare to load
-        time.sleep(10)
-
-        # Check if we're still on Cloudflare page
-        if "cloudflare" in driver.title.lower():
-            print("Cloudflare protection detected, waiting longer...")
-            time.sleep(15)
-
         print("Looking for product elements...")
 
         # Try to find product containers first, then extract name and price from each container
@@ -269,3 +261,8 @@ def search_trendyol(query, target_count=100, max_scroll_attempts=15):
         print(f"Error occurred: {e}")
         if "driver" in locals():
             driver.quit()
+
+
+if __name__ == "__main__":
+    # Example usage
+    search_trendyol("laptop", target_count=100, max_scroll_attempts=10)

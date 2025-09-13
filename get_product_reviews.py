@@ -40,14 +40,6 @@ def get_product_reviews(product_name):
         driver.get(url)
         print("Page loaded, waiting...")
 
-        # Wait longer for Cloudflare to load
-        time.sleep(10)
-
-        # Check if we're still on Cloudflare page
-        if "cloudflare" in driver.title.lower():
-            print("Cloudflare protection detected, waiting longer...")
-            time.sleep(15)
-
         print("Looking for product containers...")
 
         # Try to find product containers
@@ -105,10 +97,8 @@ def get_product_reviews(product_name):
                 driver.execute_script(
                     "arguments[0].scrollIntoView(true);", product_link
                 )
-                time.sleep(1)
                 # Click using JavaScript to avoid interception
                 driver.execute_script("arguments[0].click();", product_link)
-                time.sleep(3)  # Wait for new tab to open
 
                 # Switch to the new tab (product page)
                 all_windows = driver.window_handles
@@ -122,8 +112,6 @@ def get_product_reviews(product_name):
                 else:
                     print("No new tab opened, staying on current page")
 
-                time.sleep(3)  # Wait for product page to load completely
-
                 print("Product page loaded, scrolling to find reviews section...")
 
                 # Scroll down smoothly to load all content and find the reviews section
@@ -135,7 +123,6 @@ def get_product_reviews(product_name):
                     });
                 """
                 )
-                time.sleep(3)  # Wait for smooth scroll to complete
 
                 print("Looking for reviews...")
 
@@ -168,9 +155,6 @@ def click_reviews_button(driver):
     try:
         print("Looking for reviews button...")
 
-        # Wait a bit for page to fully load
-        time.sleep(5)
-
         # Try different approaches to find the reviews button
         print("Searching for buttons with text 'TÜM YORUMLARI GÖSTER'...")
 
@@ -193,30 +177,32 @@ def click_reviews_button(driver):
             ]
 
             reviews_button = None
-            for selector in button_selectors:
-                try:
-                    buttons = driver.find_elements(By.CSS_SELECTOR, selector)
-                    print(f"Found {len(buttons)} buttons with selector '{selector}'")
-                    for button in buttons:
-                        button_text = button.text.strip()
-                        if "YORUM" in button_text and "TÜM" in button_text:
-                            print(
-                                f"Found potential reviews button with text: '{button_text}'"
-                            )
-                            reviews_button = button
+            while reviews_button is None:
+                time.sleep(1)
+                for selector in button_selectors:
+                    try:
+                        buttons = driver.find_elements(By.CSS_SELECTOR, selector)
+                        print(
+                            f"Found {len(buttons)} buttons with selector '{selector}'"
+                        )
+                        for button in buttons:
+                            button_text = button.text.strip()
+                            if "YORUM" in button_text and "TÜM" in button_text:
+                                print(
+                                    f"Found potential reviews button with text: '{button_text}'"
+                                )
+                                reviews_button = button
+                                break
+                        if reviews_button:
                             break
-                    if reviews_button:
-                        break
-                except:
-                    continue
+                    except:
+                        continue
 
         if reviews_button:
             # Scroll to the button and click it
             driver.execute_script("arguments[0].scrollIntoView(true);", reviews_button)
-            time.sleep(2)
             driver.execute_script("arguments[0].click();", reviews_button)
             print("Clicked reviews button, waiting for reviews page to load...")
-            time.sleep(8)
             return True
         else:
             print("Reviews button not found, checking current page for reviews...")
@@ -292,3 +278,7 @@ def print_product_reviews(reviews):
 
     print(f"\nTotal Reviews: {len(reviews)}")
     print("=" * 80)
+
+
+if __name__ == "__main__":
+    get_product_reviews("laptop")
