@@ -9,9 +9,7 @@ show_image -> shows image of a product
 
 Add these functions to mcp ✅
 Optimize these functions ✅
-Remove unnecary prints
+Remove unnecessary prints
 Then add this last function
 
 search_with_filters -> to search trendyol
-
-Note : It waits for constant time in the loading pages at trendyol. You may want to change that time if your pc is loading slower.
