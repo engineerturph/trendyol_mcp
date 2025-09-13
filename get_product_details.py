@@ -7,9 +7,7 @@ import time
 
 
 def get_product_details(product_name):
-    print(f"Searching for product: {product_name}")
     url = f"https://www.trendyol.com/sr?q={product_name}"
-    print(f"URL: {url}")
 
     options = Options()
     # Remove headless mode to avoid detection
@@ -25,10 +23,8 @@ def get_product_details(product_name):
     )
 
     try:
-        print("Installing ChromeDriver...")
         # Initialize the WebDriver with webdriver-manager
         service = Service(ChromeDriverManager().install())
-        print("Creating Chrome driver...")
         driver = webdriver.Chrome(service=service, options=options)
 
         # Add stealth settings
@@ -36,11 +32,7 @@ def get_product_details(product_name):
             "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
         )
 
-        print("Navigating to search URL...")
         driver.get(url)
-        print("Page loaded, waiting...")
-
-        print("Looking for product containers...")
 
         # Try to find product containers
         container_selectors = [
@@ -54,11 +46,7 @@ def get_product_details(product_name):
         first_product_found = False
 
         for container_selector in container_selectors:
-            print(f"Trying container selector: {container_selector}")
             containers = driver.find_elements(By.CSS_SELECTOR, container_selector)
-            print(
-                f"Found {len(containers)} containers with selector '{container_selector}'"
-            )
 
             if len(containers) > 0:
                 first_product_found = True
@@ -80,16 +68,13 @@ def get_product_details(product_name):
                         )
                         href = product_link.get_attribute("href")
                         if href and ("/p/" in href or "product" in href.lower()):
-                            print(f"Found product link: {href}")
                             break
                     except:
                         continue
 
                 if not product_link:
-                    print("No specific product link found, clicking container")
                     product_link = first_container
 
-                print("Clicking on the first product...")
                 # Store current window handle
                 main_window = driver.current_window_handle
 
@@ -108,11 +93,6 @@ def get_product_details(product_name):
                         if window != main_window:
                             driver.switch_to.window(window)
                             break
-                    print("Switched to product page tab")
-                else:
-                    print("No new tab opened, staying on current page")
-
-                print("Product page loaded, extracting details...")
 
                 # Extract product details from the product page with retry logic
                 product_details = {}
@@ -140,14 +120,7 @@ def get_product_details(product_name):
                             missing_elements.append(element)
 
                     if not missing_elements:
-                        print("All product details successfully extracted!")
                         break
-                    elif len(missing_elements) < len(expected_elements):
-                        print(
-                            f"Some details found, missing: {', '.join(missing_elements)}. Retrying..."
-                        )
-                    else:
-                        print("No product details found yet. Retrying...")
 
                     limit_attempts -= 1
                     time.sleep(1)
@@ -156,14 +129,9 @@ def get_product_details(product_name):
 
                 break
 
-        if not first_product_found:
-            print("No products found in search results")
-
         driver.quit()
-        print("Script completed successfully!")
 
     except Exception as e:
-        print(f"Error occurred: {e}")
         if "driver" in locals():
             driver.quit()
 
@@ -295,8 +263,8 @@ def extract_product_page_details(driver):
             except:
                 continue
 
-    except Exception as e:
-        print(f"Error extracting product details: {e}")
+    except:
+        pass
 
     return details
 

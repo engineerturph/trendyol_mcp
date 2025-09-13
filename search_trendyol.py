@@ -7,9 +7,7 @@ import time
 
 
 def search_trendyol(query, target_count=100, max_scroll_attempts=15):
-    print(f"Searching for: {query}")
     url = f"https://www.trendyol.com/sr?q={query}"
-    print(f"URL: {url}")
 
     options = Options()
     # Remove headless mode to avoid detection
@@ -25,10 +23,8 @@ def search_trendyol(query, target_count=100, max_scroll_attempts=15):
     )
 
     try:
-        print("Installing ChromeDriver...")
         # Initialize the WebDriver with webdriver-manager
         service = Service(ChromeDriverManager().install())
-        print("Creating Chrome driver...")
         driver = webdriver.Chrome(service=service, options=options)
 
         # Add stealth settings
@@ -36,11 +32,7 @@ def search_trendyol(query, target_count=100, max_scroll_attempts=15):
             "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
         )
 
-        print("Navigating to URL...")
         driver.get(url)
-        print("Page loaded, waiting...")
-
-        print("Looking for product elements...")
 
         # Try to find product containers first, then extract name and price from each container
         container_selectors = [
@@ -54,11 +46,7 @@ def search_trendyol(query, target_count=100, max_scroll_attempts=15):
         found_containers = False
 
         for container_selector in container_selectors:
-            print(f"Trying container selector: {container_selector}")
             containers = driver.find_elements(By.CSS_SELECTOR, container_selector)
-            print(
-                f"Found {len(containers)} containers with selector '{container_selector}'"
-            )
 
             if len(containers) > 0:
                 found_containers = True
@@ -72,10 +60,6 @@ def search_trendyol(query, target_count=100, max_scroll_attempts=15):
                     len(containers) < target_count
                     and scroll_attempts < max_scroll_attempts
                 ):
-                    print(
-                        f"Found {len(containers)} containers, need {target_count}. Scrolling to load more... (Attempt {scroll_attempts + 1})"
-                    )
-
                     current_count = len(containers)
 
                     # Simply scroll to 80% of the page to load new products
@@ -104,24 +88,18 @@ def search_trendyol(query, target_count=100, max_scroll_attempts=15):
                     )
                     if len(new_containers) > current_count:
                         containers = new_containers
-                        print(
-                            f"After scrolling: Found {len(containers)} containers (+{len(containers) - current_count} new)"
-                        )
                         no_new_products_count = 0  # Reset counter
                     else:
-                        print("No new containers loaded after scrolling")
                         no_new_products_count += 1
 
                         # If we haven't found new products for 10 consecutive attempts, stop
                         if no_new_products_count >= 10:
-                            print("Stopping scroll attempts - no new products found")
                             break
 
                     scroll_attempts += 1
 
                 # Show up to 100 products (or however many we found)
                 products_to_show = min(len(containers), target_count)
-                print(f"\nShowing {products_to_show} products:")
 
                 for i, container in enumerate(containers[:products_to_show]):
                     try:
@@ -226,39 +204,13 @@ def search_trendyol(query, target_count=100, max_scroll_attempts=15):
                             print()
 
                     except Exception as e:
-                        print(f"Error processing container {i+1}: {e}")
+                        continue
 
                 break
 
-        if not found_containers:
-            print(
-                "No items found with any selector. Getting page title and some general info..."
-            )
-            print(f"Page title: {driver.title}")
-            print(f"Current URL: {driver.current_url}")
-
-            # Try to find any text elements that might contain product info
-            all_text_elements = driver.find_elements(
-                By.XPATH,
-                "//*[contains(@class, 'product') or contains(@class, 'name') or contains(@class, 'title')]",
-            )
-            print(
-                f"Found {len(all_text_elements)} elements with 'product', 'name', or 'title' in class name"
-            )
-
-            for i, element in enumerate(all_text_elements[:5]):
-                try:
-                    text = element.text.strip()
-                    if text:
-                        print(f"Element {i+1}: {text}")
-                except:
-                    pass
-
         driver.quit()
-        print("Script completed successfully!")
 
     except Exception as e:
-        print(f"Error occurred: {e}")
         if "driver" in locals():
             driver.quit()
 

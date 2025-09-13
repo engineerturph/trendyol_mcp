@@ -10,6 +10,3 @@ show_image -> shows image of a product
 Add these functions to mcp ✅
 Optimize these functions ✅
 Remove unnecessary prints
-Then add this last function
-
-search_with_filters -> to search trendyol

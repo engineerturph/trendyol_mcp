@@ -7,9 +7,7 @@ import time
 
 
 def get_product_reviews(product_name):
-    print(f"Searching for product: {product_name}")
     url = f"https://www.trendyol.com/sr?q={product_name}"
-    print(f"URL: {url}")
 
     options = Options()
     # Remove headless mode to avoid detection
@@ -25,10 +23,8 @@ def get_product_reviews(product_name):
     )
 
     try:
-        print("Installing ChromeDriver...")
         # Initialize the WebDriver with webdriver-manager
         service = Service(ChromeDriverManager().install())
-        print("Creating Chrome driver...")
         driver = webdriver.Chrome(service=service, options=options)
 
         # Add stealth settings
@@ -36,11 +32,7 @@ def get_product_reviews(product_name):
             "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})"
         )
 
-        print("Navigating to search URL...")
         driver.get(url)
-        print("Page loaded, waiting...")
-
-        print("Looking for product containers...")
 
         # Try to find product containers
         container_selectors = [
@@ -54,11 +46,7 @@ def get_product_reviews(product_name):
         first_product_found = False
 
         for container_selector in container_selectors:
-            print(f"Trying container selector: {container_selector}")
             containers = driver.find_elements(By.CSS_SELECTOR, container_selector)
-            print(
-                f"Found {len(containers)} containers with selector '{container_selector}'"
-            )
 
             if len(containers) > 0:
                 first_product_found = True
@@ -80,16 +68,13 @@ def get_product_reviews(product_name):
                         )
                         href = product_link.get_attribute("href")
                         if href and ("/p/" in href or "product" in href.lower()):
-                            print(f"Found product link: {href}")
                             break
                     except:
                         continue
 
                 if not product_link:
-                    print("No specific product link found, clicking container")
                     product_link = first_container
 
-                print("Clicking on the first product...")
                 # Store current window handle
                 main_window = driver.current_window_handle
 
@@ -108,11 +93,6 @@ def get_product_reviews(product_name):
                         if window != main_window:
                             driver.switch_to.window(window)
                             break
-                    print("Switched to product page tab")
-                else:
-                    print("No new tab opened, staying on current page")
-
-                print("Product page loaded, scrolling to find reviews section...")
 
                 # Scroll down smoothly to load all content and find the reviews section
                 driver.execute_script(
@@ -124,8 +104,6 @@ def get_product_reviews(product_name):
                 """
                 )
 
-                print("Looking for reviews...")
-
                 # Look for the reviews button and click it
                 reviews_found = click_reviews_button(driver)
 
@@ -133,19 +111,12 @@ def get_product_reviews(product_name):
                     # Extract reviews from the reviews page
                     reviews = extract_product_reviews(driver)
                     print_product_reviews(reviews)
-                else:
-                    print("Could not find or access product reviews")
 
                 break
 
-        if not first_product_found:
-            print("No products found in search results")
-
         driver.quit()
-        print("Script completed successfully!")
 
     except Exception as e:
-        print(f"Error occurred: {e}")
         if "driver" in locals():
             driver.quit()
 
@@ -153,17 +124,11 @@ def get_product_reviews(product_name):
 def click_reviews_button(driver):
     """Click the button to go to reviews page"""
     try:
-        print("Looking for reviews button...")
-
-        # Try different approaches to find the reviews button
-        print("Searching for buttons with text 'TÜM YORUMLARI GÖSTER'...")
-
         # First try: Look for any button or clickable element containing the text
         all_buttons = driver.find_elements(
             By.XPATH, "//*[contains(text(), 'TÜM YORUMLARI GÖSTERRR')]"
         )
         if all_buttons:
-            print(f"Found {len(all_buttons)} elements with reviews text")
             reviews_button = all_buttons[0]
         else:
             # Second try: Look for specific class patterns
@@ -182,15 +147,9 @@ def click_reviews_button(driver):
                 for selector in button_selectors:
                     try:
                         buttons = driver.find_elements(By.CSS_SELECTOR, selector)
-                        print(
-                            f"Found {len(buttons)} buttons with selector '{selector}'"
-                        )
                         for button in buttons:
                             button_text = button.text.strip()
                             if "YORUM" in button_text and "TÜM" in button_text:
-                                print(
-                                    f"Found potential reviews button with text: '{button_text}'"
-                                )
                                 reviews_button = button
                                 break
                         if reviews_button:
@@ -202,21 +161,16 @@ def click_reviews_button(driver):
             # Scroll to the button and click it
             driver.execute_script("arguments[0].scrollIntoView(true);", reviews_button)
             driver.execute_script("arguments[0].click();", reviews_button)
-            print("Clicked reviews button, waiting for reviews page to load...")
             return True
         else:
-            print("Reviews button not found, checking current page for reviews...")
             # Maybe reviews are already on the current page
             review_containers = driver.find_elements(By.CSS_SELECTOR, ".comment-text")
             if review_containers:
-                print(f"Found {len(review_containers)} reviews on current page")
                 return True
             else:
-                print("No reviews found on current page either")
                 return False
 
     except Exception as e:
-        print(f"Error clicking reviews button: {e}")
         return False
 
 
@@ -225,18 +179,13 @@ def extract_product_reviews(driver):
     reviews = []
 
     try:
-        print("Extracting reviews...")
-
         # Find all review containers
-
         limit_review_attempts = 5
         review_containers = []
         while len(review_containers) == 0 and limit_review_attempts > 0:
-            print(review_containers)
             time.sleep(1)
             review_containers = driver.find_elements(By.CSS_SELECTOR, ".comment-text")
             limit_review_attempts -= 1
-        print(f"Found {len(review_containers)} review containers")
 
         for i, container in enumerate(review_containers[:20]):  # Get first 20 reviews
             try:
@@ -254,13 +203,10 @@ def extract_product_reviews(driver):
                     reviews.append({"id": i + 1, "text": full_review})
 
             except Exception as e:
-                print(f"Error extracting review {i+1}: {e}")
                 continue
 
-        print(f"Successfully extracted {len(reviews)} reviews")
-
     except Exception as e:
-        print(f"Error extracting reviews: {e}")
+        pass
 
     return reviews
 
