@@ -40,14 +40,6 @@ def get_product_details(product_name):
         driver.get(url)
         print("Page loaded, waiting...")
 
-        # Wait longer for Cloudflare to load
-        time.sleep(10)
-
-        # Check if we're still on Cloudflare page
-        if "cloudflare" in driver.title.lower():
-            print("Cloudflare protection detected, waiting longer...")
-            time.sleep(15)
-
         print("Looking for product containers...")
 
         # Try to find product containers
@@ -105,10 +97,8 @@ def get_product_details(product_name):
                 driver.execute_script(
                     "arguments[0].scrollIntoView(true);", product_link
                 )
-                time.sleep(1)
                 # Click using JavaScript to avoid interception
                 driver.execute_script("arguments[0].click();", product_link)
-                time.sleep(3)  # Wait for new tab to open
 
                 # Switch to the new tab (product page)
                 all_windows = driver.window_handles
@@ -122,12 +112,46 @@ def get_product_details(product_name):
                 else:
                     print("No new tab opened, staying on current page")
 
-                time.sleep(3)  # Wait for product page to load completely
-
                 print("Product page loaded, extracting details...")
 
-                # Extract product details from the product page
-                product_details = extract_product_page_details(driver)
+                # Extract product details from the product page with retry logic
+                product_details = {}
+                limit_attempts = 5
+                expected_elements = [
+                    "title",
+                    "price",
+                    "description",
+                    "features",
+                    "rating",
+                    "brand",
+                    "stock",
+                ]
+
+                while limit_attempts > 0:
+                    product_details = extract_product_page_details(driver)
+
+                    # Check which elements are missing
+                    missing_elements = []
+                    for element in expected_elements:
+                        if (
+                            element not in product_details
+                            or not product_details[element]
+                        ):
+                            missing_elements.append(element)
+
+                    if not missing_elements:
+                        print("All product details successfully extracted!")
+                        break
+                    elif len(missing_elements) < len(expected_elements):
+                        print(
+                            f"Some details found, missing: {', '.join(missing_elements)}. Retrying..."
+                        )
+                    else:
+                        print("No product details found yet. Retrying...")
+
+                    limit_attempts -= 1
+                    time.sleep(1)
+
                 print_product_details(product_details)
 
                 break
@@ -308,3 +332,7 @@ def print_product_details(details):
             print(f"  {i}. {feature}")
 
     print("=" * 60)
+
+
+if __name__ == "__main__":
+    get_product_details("laptop")

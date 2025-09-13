@@ -43,14 +43,6 @@ def get_product_image(product_name):
         driver.get(url)
         print("Page loaded, waiting...")
 
-        # Wait longer for Cloudflare to load
-        time.sleep(10)
-
-        # Check if we're still on Cloudflare page
-        if "cloudflare" in driver.title.lower():
-            print("Cloudflare protection detected, waiting longer...")
-            time.sleep(15)
-
         print("Looking for product containers...")
 
         # Try to find product containers
@@ -108,10 +100,8 @@ def get_product_image(product_name):
                 driver.execute_script(
                     "arguments[0].scrollIntoView(true);", product_link
                 )
-                time.sleep(1)
                 # Click using JavaScript to avoid interception
                 driver.execute_script("arguments[0].click();", product_link)
-                time.sleep(3)  # Wait for new tab to open
 
                 # Switch to the new tab (product page)
                 all_windows = driver.window_handles
@@ -124,8 +114,6 @@ def get_product_image(product_name):
                     print("Switched to product page tab")
                 else:
                     print("No new tab opened, staying on current page")
-
-                time.sleep(3)  # Wait for product page to load completely
 
                 print("Product page loaded, extracting product image...")
 
@@ -156,9 +144,6 @@ def extract_and_display_product_image(driver):
 
     try:
         print("Looking for product-image-gallery-carousel...")
-
-        # Wait for images to load
-        time.sleep(3)
 
         # First try to find the specific carousel element
         try:
@@ -307,3 +292,7 @@ def download_and_show_image(image_url):
         print(f"Error downloading image: {e}")
     except Exception as e:
         print(f"Error displaying image: {e}")
+
+
+if __name__ == "__main__":
+    get_product_image("laptop")

@@ -227,11 +227,15 @@ def extract_product_reviews(driver):
     try:
         print("Extracting reviews...")
 
-        # Wait for reviews to load
-        time.sleep(3)
-
         # Find all review containers
-        review_containers = driver.find_elements(By.CSS_SELECTOR, ".comment-text")
+
+        limit_review_attempts = 5
+        review_containers = []
+        while len(review_containers) == 0 and limit_review_attempts > 0:
+            print(review_containers)
+            time.sleep(1)
+            review_containers = driver.find_elements(By.CSS_SELECTOR, ".comment-text")
+            limit_review_attempts -= 1
         print(f"Found {len(review_containers)} review containers")
 
         for i, container in enumerate(review_containers[:20]):  # Get first 20 reviews
